@@ -1,10 +1,30 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
-  <title>Document</title>
+  <title>{% block title %}title{% endblock %}</title>
 </head>
-<body>
 
+<body>
+  <!-- header -->
+  <!--{# urlの逆引き href="{% url 'app_name:name' %}" #}-->
+  <header class="mb-3">
+    <nav>
+      <ul>
+        <li><a href="{% url 'welcome:welcome' %}">Twitter Clone</a></li>
+        <li><a href="{% url 'accounts:signup' %}">Sign Up</a></li>
+      </ul>
+    </nav>
+  </header>
+  <!-- /header -->
+
+  <!-- main -->
+  <main>
+    {% block content %}
+    {% endblock %}
+  </main>
+  <!--/main-->
 </body>
+
 </html>
