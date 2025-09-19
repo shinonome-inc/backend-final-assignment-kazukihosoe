@@ -3,9 +3,61 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-<h2>{{ user.username }}'s Profile</h2>
+<h2>{{ profile_user.username }}'s Profile</h2>
+
+{% if user != profile_user %}
+<!-- フォロー/フォロー解除ボタン（他のユーザーの場合のみ） -->
+{% if is_following %}
+<form method="post" action="{% url 'accounts:unfollow' profile_user.username %}">
+    {% csrf_token %}
+    <button type="submit">フォロー解除</button>
+</form>
+{% else %}
+<form method="post" action="{% url 'accounts:follow' profile_user.username %}">
+    {% csrf_token %}
+    <button type="submit">フォロー</button>
+</form>
+{% endif %}
+{% endif %}
+
+<div>
+    <a href="{% url 'accounts:following_list' profile_user.username %}">フォロー中: {{ following_count }}</a> |
+    <a href="{% url 'accounts:follower_list' profile_user.username %}">フォロワー: {{ follower_count }}</a>
+</div>
+
+{% if user == profile_user %}
+<!-- 自分のプロフィールの場合のみ表示 -->
 <form method="post" action="{% url 'accounts:logout' %}">
     {% csrf_token %}
     <button type="submit">ログアウト</button>
 </form>
+<form method="post" action="{% url 'tweets:create' %}">
+    {% csrf_token %}
+    <button type="submit">新しい投稿を作成</button>
+</form>
+{% endif %}
+
+<h3>{{ profile_user.username }}の投稿一覧</h3>
+{% if tweets %}
+<ul>
+    {% for t in tweets %}
+    <li>
+        <strong><a href="{% url 'tweets:detail' t.pk %}">{{ t.title }}</a></strong>
+        <div>{{ t.content }}</div>
+        <small>{{ t.created }}</small>
+        {% if t.author %}
+        <small>by {{ t.author.username }}</small>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>{{ profile_user.username }}の投稿はまだありません。</p>
+{% endif %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }}">{{ message }}</div>
+{% endfor %}
+{% endif %}
 {% endblock %}

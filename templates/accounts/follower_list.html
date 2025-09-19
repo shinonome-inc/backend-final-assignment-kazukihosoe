@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }}のフォロワー{% endblock %}
+
+{% block content %}
+<h2>{{ profile_user.username }}のフォロワー</h2>
+
+<a href="{% url 'accounts:user_profile' profile_user.username %}">← {{ profile_user.username }}のプロフィールに戻る</a>
+
+{% if follower_users %}
+<ul>
+    {% for user in follower_users %}
+    <li>
+        <a href="{% url 'accounts:user_profile' user.username %}">{{ user.username }}</a>
+        {% if user.email %}
+        - {{ user.email }}
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>{{ profile_user.username }}にはまだフォロワーがいません。</p>
+{% endif %}
+{% endblock %}

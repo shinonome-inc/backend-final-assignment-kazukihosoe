@@ -4,4 +4,48 @@
 
 {% block content %}
 <h1>Home</h1>
+
+<p>
+    <a href="{% url 'accounts:user_profile' request.user.username %}" class="btn">プロフィールへ</a>
+</p>
+
+{% if tweets %}
+<ul>
+    {% for t in tweets %}
+    <li>
+        {% if t.author %}
+        <a href="{% url 'accounts:user_profile' t.author.username %}" class="btn">{{ t.author.username }}</a>
+        {% else %}
+        <span class="btn disabled">不明なユーザー</span>
+        {% endif %}
+        <strong><a href="{% url 'tweets:detail' t.pk %}">{{ t.title }}</a></strong>
+        <div>{{ t.content }}</div>
+        <small>{{ t.created }}</small>
+
+        <!-- いいねボタン -->
+        <div class="tweet-actions" style="margin: 5px 0;">
+            {% if t.user_has_liked %}
+            <form method="post" action="{% url 'tweets:unlike' t.pk %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit"
+                    style="background: none; border: none; color: red; cursor: pointer; font-size: 14px;">
+                    ❤️ {{ t.like_count }}
+                </button>
+            </form>
+            {% else %}
+            <form method="post" action="{% url 'tweets:like' t.pk %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit"
+                    style="background: none; border: none; color: gray; cursor: pointer; font-size: 14px;">
+                    🤍 {{ t.like_count }}
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>投稿はまだありません。</p>
+{% endif %}
 {% endblock %}

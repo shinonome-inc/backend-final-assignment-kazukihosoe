@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>ツイート削除確認</h2>
+<p>このツイートを本当に削除しますか？</p>
+<div style="border:1px solid #ccc; padding:8px; margin-bottom:12px;">
+    <strong>{{ tweet.title }}</strong><br>
+    <pre style="white-space:pre-wrap;">{{ tweet.content }}</pre>
+</div>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">削除する</button>
+    <a href="{% url 'tweets:detail' tweet.pk %}">キャンセル</a>
+</form>
+{% endblock %}
