@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }}のフォロー中{% endblock %}
+
+{% block content %}
+<h2>{{ profile_user.username }}のフォロー中</h2>
+
+<a href="{% url 'accounts:user_profile' profile_user.username %}">← {{ profile_user.username }}のプロフィールに戻る</a>
+
+{% if following_users %}
+<ul>
+    {% for user in following_users %}
+    <li>
+        <a href="{% url 'accounts:user_profile' user.username %}">{{ user.username }}</a>
+        {% if user.email %}
+        - {{ user.email }}
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>{{ profile_user.username }}はまだ誰もフォローしていません。</p>
+{% endif %}
+{% endblock %}

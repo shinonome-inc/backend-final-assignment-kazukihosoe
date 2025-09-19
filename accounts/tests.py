@@ -285,20 +285,87 @@ class TestLogoutView(TestCase):
 #     def test_failure_post_with_incorrect_user(self):
 
 
-# class TestFollowView(TestCase):
-#     def test_success_post(self):
+class TestFollowView(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(username='user1', password='pass123')
+        self.user2 = User.objects.create_user(username='user2', password='pass123')
+        self.client.login(username='user1', password='pass123')
+        self.url = reverse('accounts:follow', args=[self.user2.username])
 
-#     def test_failure_post_with_not_exist_user(self):
+    def test_success_post(self):
+        response = self.client.post(self.url)
+        self.assertRedirects(response, reverse('accounts:user_profile', args=[self.user2.username]))
+        # フォロー関係が作成されているか確認
+        from .models import Connection
+        connection = Connection.objects.get(user=self.user1)
+        self.assertTrue(connection.following.filter(username=self.user2.username).exists())
 
-#     def test_failure_post_with_self(self):
+    def test_failure_post_with_not_exist_user(self):
+        invalid_url = reverse('accounts:follow', args=['nonexistent'])
+        response = self.client.post(invalid_url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_failure_post_with_self(self):
+        self_url = reverse('accounts:follow', args=[self.user1.username])
+        response = self.client.post(self_url)
+        self.assertRedirects(response, reverse('accounts:user_profile', args=[self.user1.username]))
+        # フォロー関係が作成されていないことを確認
+        from .models import Connection
+        try:
+            connection = Connection.objects.get(user=self.user1)
+            self.assertFalse(connection.following.filter(username=self.user1.username).exists())
+        except Connection.DoesNotExist:
+            pass  # Connectionが作成されていないのが正常
+
+    def test_success_post_toggle_follow(self):
+        # 最初にフォロー
+        response = self.client.post(self.url)
+        from .models import Connection
+        connection = Connection.objects.get(user=self.user1)
+        self.assertTrue(connection.following.filter(username=self.user2.username).exists())
+        
+        # 再度POSTでフォロー解除
+        response = self.client.post(self.url)
+        self.assertFalse(connection.following.filter(username=self.user2.username).exists())
 
 
-# class TestUnfollowView(TestCase):
-#     def test_success_post(self):
+class TestUnfollowView(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(username='user1', password='pass123')
+        self.user2 = User.objects.create_user(username='user2', password='pass123')
+        self.client.login(username='user1', password='pass123')
+        self.url = reverse('accounts:unfollow', args=[self.user2.username])
+        
+        # 事前にフォロー関係を作成
+        from .models import Connection
+        connection = Connection.objects.create(user=self.user1)
+        connection.following.add(self.user2)
 
-#     def test_failure_post_with_not_exist_tweet(self):
+    def test_success_post(self):
+        response = self.client.post(self.url)
+        self.assertRedirects(response, reverse('accounts:user_profile', args=[self.user2.username]))
+        
+        # フォロー関係が削除されているか確認
+        from .models import Connection
+        connection = Connection.objects.get(user=self.user1)
+        self.assertFalse(connection.following.filter(username=self.user2.username).exists())
 
-#     def test_failure_post_with_incorrect_user(self):
+    def test_failure_post_with_not_exist_user(self):
+        invalid_url = reverse('accounts:unfollow', args=['nonexistent'])
+        response = self.client.post(invalid_url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_failure_post_with_not_following(self):
+        # フォローしていない状態でアンフォローを試す
+        user3 = User.objects.create_user(username='user3', password='pass123')
+        url = reverse('accounts:unfollow', args=[user3.username])
+        response = self.client.post(url)
+        self.assertRedirects(response, reverse('accounts:user_profile', args=[user3.username]))
+
+    def test_failure_post_with_self(self):
+        self_url = reverse('accounts:unfollow', args=[self.user1.username])
+        response = self.client.post(self_url)
+        self.assertRedirects(response, reverse('accounts:user_profile', args=[self.user1.username]))
 
 
 # class TestFollowingListView(TestCase):

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Tweet Detail</h2>
+{% if tweet.author %}
+<p>投稿者: <a href="{% url 'accounts:user_profile' tweet.author.username %}">{{ tweet.author.username }}</a></p>
+{% else %}
+<p>投稿者: 不明なユーザー</p>
+{% endif %}
+<h3>{{ tweet.title }}</h3>
+<p>{{ tweet.content }}</p>
+<small>作成日時: {{ tweet.created }}</small>
+
+<!-- いいね機能 -->
+<div class="tweet-actions" style="margin: 15px 0;">
+    {% if tweet.user_has_liked %}
+    <!-- いいね済み → Unlikeボタン -->
+    <form method="post" action="{% url 'tweets:unlike' tweet.pk %}" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn-unlike" style="background: none; border: none; color: red; cursor: pointer;">
+            ❤️ {{ tweet.like_count }}
+        </button>
+    </form>
+    {% else %}
+    <!-- 未いいね → Likeボタン -->
+    <form method="post" action="{% url 'tweets:like' tweet.pk %}" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn-like" style="background: none; border: none; color: gray; cursor: pointer;">
+            🤍 {{ tweet.like_count }}
+        </button>
+    </form>
+    {% endif %}
+</div>
+
+{% if tweet.author == request.user %}
+<p><a href="{% url 'tweets:delete' tweet.pk %}">delete</a></p>
+{% endif %}
+
+<!-- メッセージ表示 -->
+{% if messages %}
+{% for message in messages %}
+{% if message.tags == 'success' %}
+<div class="alert alert-success"
+    style="padding: 10px; margin: 10px 0; border-radius: 4px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;">
+    {{ message }}
+</div>
+{% elif message.tags == 'warning' %}
+<div class="alert alert-warning"
+    style="padding: 10px; margin: 10px 0; border-radius: 4px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7;">
+    {{ message }}
+</div>
+{% else %}
+<div class="alert" style="padding: 10px; margin: 10px 0; border-radius: 4px;">
+    {{ message }}
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endblock %}
