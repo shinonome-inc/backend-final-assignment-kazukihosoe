@@ -19,7 +19,7 @@ class HomeView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # 各ツイートにいいね状態を追加
-        tweets = context['tweets']
+        tweets = context["tweets"]
         for tweet in tweets:
             tweet.user_has_liked = tweet.is_liked_by(self.request.user)
         return context
@@ -28,7 +28,7 @@ class HomeView(LoginRequiredMixin, ListView):
 class TweetCreateView(LoginRequiredMixin, CreateView):
     template_name = "tweets/create.html"
     model = Tweet
-    success_url = reverse_lazy('tweets:home')
+    success_url = reverse_lazy("tweets:home")
     form_class = CreateForm
 
     def form_valid(self, form):
@@ -38,19 +38,19 @@ class TweetCreateView(LoginRequiredMixin, CreateView):
 
 class TweetDetailView(LoginRequiredMixin, DetailView):
     model = Tweet
-    template_name = 'tweets/detail.html'
+    template_name = "tweets/detail.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        tweet = context['tweet']
+        tweet = context["tweet"]
         tweet.user_has_liked = tweet.is_liked_by(self.request.user)
         return context
 
 
 class TweetDeleteView(LoginRequiredMixin, DeleteView):
     model = Tweet
-    success_url = reverse_lazy('tweets:home')
-    template_name = 'tweets/tweet_confirm_delete.html'
+    success_url = reverse_lazy("tweets:home")
+    template_name = "tweets/tweet_confirm_delete.html"
 
     def get_queryset(self):
         return super().get_queryset().filter(author=self.request.user)
@@ -66,13 +66,13 @@ class LikeView(LoginRequiredMixin, View):
             Like.objects.create(user=request.user, tweet=tweet)
             messages.success(request, f"{tweet.title}にいいねしました！")
 
-        return redirect('tweets:detail', pk=tweet.pk)
+        return redirect("tweets:detail", pk=tweet.pk)
 
 
 class UnLikeView(LoginRequiredMixin, View):
     def post(self, request, pk):
         tweet = get_object_or_404(Tweet, pk=pk)
-        
+
         try:
             like = Like.objects.get(user=request.user, tweet=tweet)
             like.delete()
@@ -80,4 +80,4 @@ class UnLikeView(LoginRequiredMixin, View):
         except Like.DoesNotExist:
             messages.warning(request, "いいねしていません。")
 
-        return redirect('tweets:detail', pk=tweet.pk)
+        return redirect("tweets:detail", pk=tweet.pk)
